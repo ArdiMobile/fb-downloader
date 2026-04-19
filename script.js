@@ -1,30 +1,26 @@
-document.getElementById('dlForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const urlInput = document.getElementById('urlInput');
-    const url = urlInput.value.trim();
+async function handleDownload() {
+  try {
+    setStatus("Fetching video from URL...");
 
-    if (!url) return alert("Please paste a Facebook link!");
+    const res = await fetch("/api/index", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ url: input.value })
+    });
 
-    // Show loading state
-    alert("Fetching video data...");
+    const data = await res.json();
 
-    try {
-        // This MUST match your vercel.json source path
-        const response = await fetch(`/api/info?url=${encodeURIComponent(url)}`);
-        
-        if (!response.ok) throw new Error('Network response was not ok');
-        
-        const data = await response.json();
-        console.log("Server Response:", data);
-
-        if (data.status === "success") {
-            // Logic to handle the download goes here
-            alert("Success! Server received: " + data.received_url);
-        } else {
-            alert("Server Error: " + data.message);
-        }
-    } catch (error) {
-        console.error("Fetch error:", error);
-        alert("Fetching video error. Check connection.");
+    if (!data.success) {
+      throw new Error(data.message);
     }
-});
+
+    setStatus("Done!");
+    console.log(data.video);
+
+  } catch (err) {
+    setStatus("Error: " + err.message);
+    console.error(err);
+  }
+}
