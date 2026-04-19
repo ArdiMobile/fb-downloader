@@ -1,31 +1,30 @@
-// Mobile Menu Toggle
-document.getElementById('menuBtn').addEventListener('click', () => {
-    document.getElementById('navLinks').classList.toggle('active');
-});
-
-// Auto-Paste on Focus
-const urlInput = document.getElementById('urlInput');
-urlInput.addEventListener('focus', async () => {
-    try {
-        const text = await navigator.clipboard.readText();
-        if (text.startsWith('http')) { urlInput.value = text; }
-    } catch (err) { console.log('Clipboard permission denied'); }
-});
-
-// Form Submission
 document.getElementById('dlForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const url = urlInput.value;
-    if (!url) return alert("Please paste a link!");
+    const urlInput = document.getElementById('urlInput');
+    const url = urlInput.value.trim();
 
-    alert("Fetching video from: " + url); // Matches your screenshot test
+    if (!url) return alert("Please paste a Facebook link!");
+
+    // Show loading state
+    alert("Fetching video data...");
 
     try {
-        // Updated to use the new route from your vercel.json
+        // This MUST match your vercel.json source path
         const response = await fetch(`/api/info?url=${encodeURIComponent(url)}`);
+        
+        if (!response.ok) throw new Error('Network response was not ok');
+        
         const data = await response.json();
-        console.log(data);
+        console.log("Server Response:", data);
+
+        if (data.status === "success") {
+            // Logic to handle the download goes here
+            alert("Success! Server received: " + data.received_url);
+        } else {
+            alert("Server Error: " + data.message);
+        }
     } catch (error) {
-        console.error("Download failed:", error);
+        console.error("Fetch error:", error);
+        alert("Fetching video error. Check connection.");
     }
 });
