@@ -1,21 +1,27 @@
-from http.server import BaseHTTPRequestHandler
 import json
-from urllib.parse import parse_qs, urlparse
 
-class handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        # Parse the URL parameters
-        query = parse_qs(urlparse(self.path).query)
-        video_url = query.get('url', [None])[0]
+def handler(request):
+    try:
+        body = request.get_json()
+        url = body.get("url")
 
-        self.send_response(200)
-        self.send_header('Content-type', 'application/json')
-        self.end_headers()
+        if not url:
+            return {
+                "statusCode": 400,
+                "body": json.dumps({"success": False, "message": "No URL"})
+            }
 
-        response = {
-            "status": "success",
-            "received_url": video_url,
-            "message": "Backend connected successfully!"
+        # TEMP TEST RESPONSE (IMPORTANT)
+        return {
+            "statusCode": 200,
+            "body": json.dumps({
+                "success": True,
+                "video": "https://samplelib.com/lib/preview/mp4/sample-5s.mp4"
+            })
         }
-        
-        self.wfile.write(json.dumps(response).encode('utf-8'))
+
+    except Exception as e:
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"success": False, "message": str(e)})
+        }
