@@ -75,9 +75,12 @@ body { font-family: 'Segoe UI', sans-serif; margin: 0; color: var(--text); overf
             <h1>High Speed Facebook Video Downloader</h1>
             <p>Fast, Simple, and Secure. 100% Free.</p>
             <form class="search-area" id="dlForm">
-                <input type="text" id="urlInput" placeholder="Paste your video URL here..." autocomplete="off">
-                <button type="submit" class="btn-dl"><i class="fas fa-search"></i></button>
-            </form>
+    <input type="text" id="urlInput" placeholder="Paste your video URL here..." autocomplete="off">
+    <button type="submit" class="btn-dl">
+        <i class="fas fa-search"></i>
+    </button>
+</form>
+
         </div>
     </header>
 
@@ -136,7 +139,56 @@ body { font-family: 'Segoe UI', sans-serif; margin: 0; color: var(--text); overf
         <p class="copyright">© 2026 YasinG Downloader. All rights reserved.</p>
     </footer>
 
-    <script src="script.js"></script>
+    <script>const dlForm = document.getElementById('dlForm');
+const urlInput = document.getElementById('urlInput');
+
+// 1. AUTO-PASTE FEATURE
+urlInput.addEventListener('focus', async () => {
+    try {
+        const text = await navigator.clipboard.readText();
+        if (text.includes("facebook.com")) {
+            urlInput.value = text;
+        }
+    } catch (err) {
+        console.log("Clipboard access blocked by browser");
+    }
+});
+
+// 2. STOP PAGE RELOAD & FETCH DATA
+dlForm.addEventListener('submit', async (event) => {
+    // This is the most important line to stop the reload!
+    event.preventDefault(); 
+
+    const videoUrl = urlInput.value.trim();
+    if (!videoUrl) {
+        alert("Please paste a link first!");
+        return;
+    }
+
+    // Change button text to show it's working
+    const btn = dlForm.querySelector('button');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    try {
+        // MUST use the /api/info path defined in vercel.json
+        const response = await fetch(`/api/info?url=${encodeURIComponent(videoUrl)}`);
+        const data = await response.json();
+
+        if (data.status === "success") {
+            alert("Success! Backend received: " + data.received_url);
+            console.log("Server Response:", data);
+        } else {
+            alert("Server Error: " + data.message);
+        }
+    } catch (error) {
+        console.error("Fetch error:", error);
+        alert("Connection error. Is your Vercel deployment finished?");
+    } finally {
+        // Reset button icon
+        btn.innerHTML = '<i class="fas fa-search"></i>';
+    }
+});
+</script>
     <script>
         function toggleFaq(el) { el.classList.toggle('active'); }
     </script>
