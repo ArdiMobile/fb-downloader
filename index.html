@@ -171,7 +171,9 @@ dlForm.addEventListener('submit', async (event) => {
 
     try {
         // MUST use the /api/info path defined in vercel.json
-        const response = await fetch(`/api/info?url=${encodeURIComponent(videoUrl)}`);
+        // Replace your fetch line with this:
+const response = await fetch(`/api/info?url=${encodeURIComponent(videoUrl)}`);
+
         const data = await response.json();
 
         if (data.status === "success") {
