@@ -18,8 +18,7 @@ class handler(BaseHTTPRequestHandler):
             return
 
         try:
-            ydl_opts = {'quiet': True}
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            with yt_dlp.YoutubeDL({'quiet': True}) as ydl:
                 info = ydl.extract_info(facebook_url, download=False)
 
                 formats = []
@@ -30,7 +29,6 @@ class handler(BaseHTTPRequestHandler):
                             "url": f.get("url")
                         })
 
-                # Remove duplicates & keep best ones
                 seen = set()
                 unique_formats = []
                 for f in formats:
@@ -42,7 +40,9 @@ class handler(BaseHTTPRequestHandler):
                     "status": "success",
                     "title": info.get("title"),
                     "thumbnail": info.get("thumbnail"),
-                    "formats": unique_formats[:5]  # limit
+                    "formats": unique_formats[:5],
+                    "uploader": info.get("uploader"),
+                    "uploader_url": info.get("uploader_url")
                 }
 
         except Exception as e:
