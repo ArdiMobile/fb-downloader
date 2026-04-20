@@ -1,34 +1,62 @@
-document.getElementById('dlForm').addEventListener('submit', async (e) => {
-    e.preventDefault(); 
-    
-    const urlInput = document.getElementById('urlInput');
-    const btn = e.target.querySelector('button');
-    const videoUrl = urlInput.value.trim();
+const dlForm = document.getElementById('dlForm');
+const urlInput = document.getElementById('urlInput');
+const preview = document.getElementById('preview');
 
-    if (!videoUrl) return alert("Please paste a Facebook link!");
-
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-
+// AUTO-PASTE
+urlInput.addEventListener('focus', async () => {
     try {
-        // Calling the API route defined in your vercel.json
-        const res = await fetch(`/api/info?url=${encodeURIComponent(videoUrl)}`);
-        const data = await res.json();
-
-        // FIX: We check for "download_url" to match the Python code above
-        if (data.status === "success" && data.download_url) {
-            const a = document.createElement('a');
-            a.href = data.download_url;
-            a.download = `${data.title || 'video'}.mp4`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            
-            alert("Download started!");
-        } else {
-            alert("Server Error: " + (data.message || "Video link not found"));
+        const text = await navigator.clipboard.readText();
+        if (text.includes("facebook.com")) {
+            urlInput.value = text;
         }
     } catch (err) {
-        alert("Connection error. Ensure your Vercel deployment is 'Ready'.");
+        console.log("Clipboard blocked");
+    }
+});
+
+// SUBMIT
+dlForm.addEventListener('submit', async (event) => {
+    event.preventDefault();
+
+    const videoUrl = urlInput.value.trim();
+    if (!videoUrl) {
+        alert("Paste a link first!");
+        return;
+    }
+
+    const btn = dlForm.querySelector('button');
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
+    preview.innerHTML = "<p>Loading...</p>";
+
+    try {
+        const response = await fetch(`/api/info?url=${encodeURIComponent(videoUrl)}`);
+        const data = await response.json();
+
+        console.log(data);
+
+        if (data.status === "success") {
+            preview.innerHTML = `
+                <div style="background:#fff;padding:15px;border-radius:12px;margin-top:20px;">
+                    <img src="${data.thumbnail || 'https://via.placeholder.com/500'}" 
+                         style="width:100%;border-radius:10px;">
+                    
+                    <h3 style="margin-top:10px;">${data.title}</h3>
+
+                    <a href="${data.download_url}" target="_blank"
+                       style="display:inline-block;margin-top:10px;padding:10px 20px;
+                       background:#2d6df6;color:white;border-radius:8px;text-decoration:none;">
+                       Download Video
+                    </a>
+                </div>
+            `;
+        } else {
+            preview.innerHTML = `<p style="color:red;">${data.message}</p>`;
+        }
+
+    } catch (error) {
+        console.error(error);
+        preview.innerHTML = `<p style="color:red;">Connection error</p>`;
     } finally {
         btn.innerHTML = '<i class="fas fa-search"></i>';
     }
