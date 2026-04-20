@@ -10,24 +10,37 @@ class handler(BaseHTTPRequestHandler):
 
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*') # Fixes cross-site errors
+        self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
 
         if not facebook_url:
-            self.wfile.write(json.dumps({"status": "error", "message": "No URL provided"}).encode())
+            self.wfile.write(json.dumps({
+                "status": "error",
+                "message": "No URL provided"
+            }).encode())
             return
 
         try:
-            ydl_opts = {'format': 'best', 'quiet': True}
+            ydl_opts = {
+                'format': 'best',
+                'quiet': True
+            }
+
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(facebook_url, download=False)
-                # We are strictly using "download_url" as the key
+
                 response_data = {
                     "status": "success",
                     "download_url": info.get('url'),
-                    "title": info.get('title', 'video')
+                    "title": info.get('title', 'video'),
+                    "thumbnail": info.get('thumbnail'),
+                    "webpage_url": info.get('webpage_url')
                 }
+
         except Exception as e:
-            response_data = {"status": "error", "message": str(e)}
+            response_data = {
+                "status": "error",
+                "message": str(e)
+            }
 
         self.wfile.write(json.dumps(response_data).encode('utf-8'))
