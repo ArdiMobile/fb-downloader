@@ -1,7 +1,10 @@
 {
-  "functions": {
-    "api/index.py": {
-      "runtime": "@vercel/python"
-    }
-  }
+  "builds": [
+    { "src": "api/index.py", "use": "@vercel/python" },
+    { "src": "index.html", "use": "@vercel/static" }
+  ],
+  "rewrites": [
+    { "source": "/api/info", "destination": "/api/index.py" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
