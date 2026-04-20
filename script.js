@@ -1,34 +1,23 @@
-const urlInput = document.getElementById('urlInput');
-
-// 1. AUTO-PASTE
-urlInput.addEventListener('focus', async () => {
-    try {
-        const text = await navigator.clipboard.readText();
-        if (text.includes("facebook.com")) {
-            urlInput.value = text;
-        }
-    } catch (err) { console.log("Clipboard access blocked"); }
-});
-
-// 2. DOWNLOAD FETCH
+// This connects the button to the Vercel backend
 document.getElementById('dlForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const videoUrl = urlInput.value.trim();
-    if (!videoUrl) return alert("Please paste a link!");
-
-    alert("Fetching video...");
+    const url = document.getElementById('urlInput').value.trim();
+    
+    if (!url) return alert("Please paste a Facebook link!");
 
     try {
-        // Must match the source in vercel.json
-        const response = await fetch(`/api/info?url=${encodeURIComponent(videoUrl)}`);
+        // MUST use /api/info as defined in your vercel.json rewrite
+        const response = await fetch(`/api/info?url=${encodeURIComponent(url)}`);
         const data = await response.json();
-        
+
         if (data.status === "success") {
-            alert("Success! Backend received: " + data.received_url);
+            alert("Connection successful! Server received your link.");
+            console.log("Backend response:", data);
         } else {
-            alert("Error: " + data.message);
+            alert("Backend Error: " + data.message);
         }
     } catch (error) {
-        alert("Fetching video error. Check your Vercel logs.");
+        console.error("Fetch error:", error);
+        alert("Error fetching video. Check your Vercel deployment logs.");
     }
 });
