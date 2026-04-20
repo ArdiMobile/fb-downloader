@@ -1,26 +1,34 @@
-async function handleDownload() {
-  try {
-    setStatus("Fetching video from URL...");
+const urlInput = document.getElementById('urlInput');
 
-    const res = await fetch("/api/index", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ url: input.value })
-    });
+// 1. AUTO-PASTE
+urlInput.addEventListener('focus', async () => {
+    try {
+        const text = await navigator.clipboard.readText();
+        if (text.includes("facebook.com")) {
+            urlInput.value = text;
+        }
+    } catch (err) { console.log("Clipboard access blocked"); }
+});
 
-    const data = await res.json();
+// 2. DOWNLOAD FETCH
+document.getElementById('dlForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const videoUrl = urlInput.value.trim();
+    if (!videoUrl) return alert("Please paste a link!");
 
-    if (!data.success) {
-      throw new Error(data.message);
+    alert("Fetching video...");
+
+    try {
+        // Must match the source in vercel.json
+        const response = await fetch(`/api/info?url=${encodeURIComponent(videoUrl)}`);
+        const data = await response.json();
+        
+        if (data.status === "success") {
+            alert("Success! Backend received: " + data.received_url);
+        } else {
+            alert("Error: " + data.message);
+        }
+    } catch (error) {
+        alert("Fetching video error. Check your Vercel logs.");
     }
-
-    setStatus("Done!");
-    console.log(data.video);
-
-  } catch (err) {
-    setStatus("Error: " + err.message);
-    console.error(err);
-  }
-}
+});
