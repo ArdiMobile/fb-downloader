@@ -14,33 +14,38 @@ class handler(BaseHTTPRequestHandler):
         self.end_headers()
 
         if not facebook_url:
-            self.wfile.write(json.dumps({
-                "status": "error",
-                "message": "No URL provided"
-            }).encode())
+            self.wfile.write(json.dumps({"status":"error","message":"No URL"}).encode())
             return
 
         try:
-            ydl_opts = {
-                'format': 'best',
-                'quiet': True
-            }
-
+            ydl_opts = {'quiet': True}
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(facebook_url, download=False)
 
+                formats = []
+                for f in info.get("formats", []):
+                    if f.get("url") and f.get("height"):
+                        formats.append({
+                            "quality": f"{f.get('height')}p",
+                            "url": f.get("url")
+                        })
+
+                # Remove duplicates & keep best ones
+                seen = set()
+                unique_formats = []
+                for f in formats:
+                    if f["quality"] not in seen:
+                        seen.add(f["quality"])
+                        unique_formats.append(f)
+
                 response_data = {
                     "status": "success",
-                    "download_url": info.get('url'),
-                    "title": info.get('title', 'video'),
-                    "thumbnail": info.get('thumbnail'),
-                    "webpage_url": info.get('webpage_url')
+                    "title": info.get("title"),
+                    "thumbnail": info.get("thumbnail"),
+                    "formats": unique_formats[:5]  # limit
                 }
 
         except Exception as e:
-            response_data = {
-                "status": "error",
-                "message": str(e)
-            }
+            response_data = {"status":"error","message":str(e)}
 
-        self.wfile.write(json.dumps(response_data).encode('utf-8'))
+        self.wfile.write(json.dumps(response_data).encode())
