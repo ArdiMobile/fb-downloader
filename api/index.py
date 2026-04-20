@@ -18,18 +18,16 @@ class handler(BaseHTTPRequestHandler):
             return
 
         try:
-            # Setting up yt-dlp to get the direct video link
+            # Extraction logic using yt-dlp
             ydl_opts = {'format': 'best', 'quiet': True}
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(facebook_url, download=False)
-                video_download_url = info.get('url')
-                title = info.get('title', 'facebook_video')
-
-            response_data = {
-                "status": "success",
-                "download_url": video_download_url,
-                "title": title
-            }
+                # We name this "download_url" for the frontend to find
+                response_data = {
+                    "status": "success",
+                    "download_url": info.get('url'),
+                    "title": info.get('title', 'video')
+                }
         except Exception as e:
             response_data = {"status": "error", "message": str(e)}
 
