@@ -2,6 +2,19 @@ const dlForm = document.getElementById('dlForm');
 const urlInput = document.getElementById('urlInput');
 const preview = document.getElementById('preview');
 
+// AUTO PASTE
+urlInput.addEventListener('focus', async () => {
+    try {
+        const text = await navigator.clipboard.readText();
+        if (text.includes("facebook.com")) {
+            urlInput.value = text;
+        }
+    } catch (e) {
+        console.log("Clipboard blocked");
+    }
+});
+
+// SUBMIT
 dlForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -19,7 +32,6 @@ dlForm.addEventListener('submit', async (e) => {
             return;
         }
 
-        // VIDEO PLAYER + GREEN PLAY BUTTON
         const firstVideo = data.formats[0]?.url;
 
         let formatButtons = data.formats.map(f => `
@@ -31,52 +43,46 @@ dlForm.addEventListener('submit', async (e) => {
         `).join("");
 
         preview.innerHTML = `
-            <div style="background:#fff;padding:20px;border-radius:15px;">
+        <div style="background:#fff;padding:20px;border-radius:15px;color:#111;">
 
-                <div style="position:relative;">
-                    <video controls style="width:100%;border-radius:10px;">
-                        <source src="${firstVideo}">
-                    </video>
+            <video controls style="width:100%;border-radius:10px;">
+                <source src="${firstVideo}">
+            </video>
 
-                    <!-- GREEN PLAY OVERLAY -->
-                    <div style="
-                        position:absolute;
-                        top:50%;
-                        left:50%;
-                        transform:translate(-50%,-50%);
-                        background:#00c853;
-                        width:70px;
-                        height:70px;
-                        border-radius:50%;
-                        display:flex;
-                        align-items:center;
-                        justify-content:center;
-                        font-size:30px;
-                        color:white;
-                        pointer-events:none;
-                    ">
-                        ▶
-                    </div>
-                </div>
+            <h3 style="margin-top:10px;">${data.title}</h3>
 
-                <h3>${data.title}</h3>
+            <p style="color:#555;">
+                ${data.uploader ? "By: " + data.uploader : ""}
+            </p>
 
-                <div>${formatButtons}</div>
+            ${data.uploader_url ? `
+            <a href="${data.uploader_url}" target="_blank" 
+            style="display:inline-block;margin-bottom:10px;color:#1877f2;">
+            View more from uploader
+            </a>` : ""}
 
-                <button onclick="resetDownloader()" 
-                    style="margin-top:15px;padding:10px 20px;
-                    border:none;background:#333;color:#fff;border-radius:8px;">
-                    Download Another Video
-                </button>
+            <!-- AD -->
+            <div style="background:#ddd;text-align:center;padding:15px;margin:15px 0;border-radius:10px;">
+                Ads Banner (468x60)
             </div>
+
+            <div>${formatButtons}</div>
+
+            <button onclick="resetDownloader()" 
+                style="margin-top:15px;padding:10px 20px;
+                border:none;background:#333;color:#fff;border-radius:8px;">
+                Download Another Video
+            </button>
+
+        </div>
         `;
 
     } catch (err) {
-        preview.innerHTML = "Error loading video";
+        preview.innerHTML = `<p style="color:red">Connection error</p>`;
     }
 });
 
-// RESET FUNCTION
+// RESET
 function resetDownloader() {
     preview.innerHTML = "";
     urlInput.value = "";
