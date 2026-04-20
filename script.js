@@ -62,9 +62,12 @@ dlForm.addEventListener('submit', async (e) => {
             </a>` : ""}
 
             <!-- AD -->
-            <div style="background:#ddd;text-align:center;padding:15px;margin:15px 0;border-radius:10px;">
-                Ads Banner (468x60)
-            </div>
+         <div style="height: 500px;">
+<a href="https://www.example.com">
+  <img src=" https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEi3emvbxUKCk0RWnwHkvZsa-R9GSRca9bmPcokzxCElc7TPFnoErZcE9dlU9X3mCwXxUJdRB0qMWLRu3HcKpbMjPMBbvQ4KjGNCZGq658mW-2KaHHbSwcWD2JcbqjDhXrUJV9QyXeXwLtX7jgEEc6ZcGyE0WxTxwDKFgoovhQbl4I2wYQtFVMjqXoSzfCw/s320/20250.png " alt="Description of the image">
+</a>
+</div>
+
 
             <div>${formatButtons}</div>
 
