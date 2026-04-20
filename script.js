@@ -1,23 +1,33 @@
-// This connects the button to the Vercel backend
 document.getElementById('dlForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const url = document.getElementById('urlInput').value.trim();
-    
-    if (!url) return alert("Please paste a Facebook link!");
+    const urlInput = document.getElementById('urlInput');
+    const btn = e.target.querySelector('button');
+    const originalBtn = btn.innerHTML;
+
+    if (!urlInput.value) return alert("Paste a link first!");
+
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; // Loading state
 
     try {
-        // MUST use /api/info as defined in your vercel.json rewrite
-        const response = await fetch(`/api/info?url=${encodeURIComponent(url)}`);
-        const data = await response.json();
+        const res = await fetch(`/api/info?url=${encodeURIComponent(urlInput.value)}`);
+        const data = await res.json();
 
         if (data.status === "success") {
-            alert("Connection successful! Server received your link.");
-            console.log("Backend response:", data);
+            // Create a hidden link and click it to start the download
+            const a = document.createElement('a');
+            a.href = data.download_url;
+            a.download = `${data.title}.mp4`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            alert("Download started!");
         } else {
-            alert("Backend Error: " + data.message);
+            alert("Error: " + data.message);
         }
-    } catch (error) {
-        console.error("Fetch error:", error);
-        alert("Error fetching video. Check your Vercel deployment logs.");
+    } catch (err) {
+        alert("Connection error. Check Vercel logs.");
+    } finally {
+        btn.innerHTML = originalBtn;
     }
 });
