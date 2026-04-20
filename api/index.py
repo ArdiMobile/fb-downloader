@@ -10,7 +10,7 @@ class handler(BaseHTTPRequestHandler):
 
         self.send_response(200)
         self.send_header('Content-type', 'application/json')
-        self.send_header('Access-Control-Allow-Origin', '*')
+        self.send_header('Access-Control-Allow-Origin', '*') # Fixes cross-site errors
         self.end_headers()
 
         if not facebook_url:
@@ -18,11 +18,10 @@ class handler(BaseHTTPRequestHandler):
             return
 
         try:
-            # Extraction logic using yt-dlp
             ydl_opts = {'format': 'best', 'quiet': True}
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info(facebook_url, download=False)
-                # We name this "download_url" for the frontend to find
+                # We are strictly using "download_url" as the key
                 response_data = {
                     "status": "success",
                     "download_url": info.get('url'),
